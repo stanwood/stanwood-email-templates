@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+        }
+        header {
+            background-color: #D55B5D;
+            padding: 16px;
+            color: white;
+        }
+        footer {
+            background-color: rgb(245, 245, 245);
+            color: darkgray;
+            font-size: 12px;
+            padding: 16px;
+        }
+        footer h1 {
+            font-size: 12px;
+            color: #D55B5D;
+            padding: 0;
+            margin: 0;
+        }
+        section {
+            padding: 16px;
+        }
+        section h1 {
+            font-size: 14px;
+            padding: 4px;
+            margin: 0;
+        }
+        table {
+            border: 1px solid lightgray;
+        }
+        th {
+            color: darkgray;
+        }
+        .footer {
+            font-weight: bold;
+            background-color: rgb(250, 250, 250);
+            color: darkgray;
+        }
+        tr:nth-child(even) {
+            background-color: rgb(240, 240, 240);
+        }
+    </style>
+</head>
+<body>
+<header>stanwood - Weekly report</header>
+<section>
+    <table border="0" cellpadding="8" cellspacing="0">
+        <tr>
+            <td>Worked</td>
+            <td>{SUM(MIN(ticket.work_ratio,1) * ticket.work) | filter:this_week}h</td>
+            <td>{SUM(MIN(ticket.work_ratio,1) * ticket.work) | filter:this_year}h YTD</td>
+        </tr>
+        <tr>
+            <td>Finished</td>
+            <td>{SUM(MIN(ticket.work_ratio,1) * ticket.originalEstimate) | filter:this_week && status == "Done" && status.lastUStatuspdate = this_week}h</td>
+            <td>{SUM(MIN(ticket.work_ratio,1) * ticket.originalEstimate) | filter:this_year && status == "Done" && status.lastUStatuspdate = this_year}h YTD</td>
+        </tr>
+        <tr>
+            <td>Expected</td>
+            <td>{(SUM(MIN(ticket.work_ratio,1) * ticket.originalEstimate) | status == "Done") + (ticket.originalEstimate | status != "Done")} h</td>
+        </tr>
+    </table>
+    <br>
+    <h1>Tasks done</h1>
+    <table border="0" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Task</th>
+            <th>Estimate</th>
+            <th>Logged</th>
+        </tr>
+        <!--loop for | ticket.status == "Done" && ticket.status.lastUStatuspdate = this_week-->
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/browse/{ticket id}">{ticket id} {ticket summary}</a></td>
+            <td>{ticket.original_estimate}h</td>
+            <td>{MIN(ticket.work_ratio,1) * ticket.work}h</td>
+        </tr>
+        <tr class="footer">
+            <td>TOTAL</td>
+            <td>{ticket.original_estimate}h</td>
+            <td>{MIN(ticket.work_ratio,1) * ticket.work}h</td>
+        </tr>
+    </table>
+    <br>
+    <h1>New tasks</h1>
+    <table border="0" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Task</th>
+            <th>Estimate</th>
+            <th>Reported</th>
+        </tr>
+        <!--loop for | ticket.created_at = this_week-->
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/browse/{ticket id}">{ticket id} {ticket summary}</a></td>
+            <td>{ticket.original_estimate}h</td>
+            <td>{ticket.reporter}</td>
+        </tr>
+        <tr class="footer">
+            <td>TOTAL</td>
+            <td>{ticket.original_estimate}h</td>
+        </tr>
+    </table>
+    <br>
+    <h1>Current state</h1>
+    <table border="0" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Status</th>
+            <th># of tickets</th>
+            <th>Estimate</th>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Inbox%22">Inbox</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Inbox"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Inbox"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Needs%20estimate%22">Needs estimate</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Needs estimate"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Needs estimate"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Needs%20approval%22">Needs approval</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Needs approval"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Needs approval"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Approved%20backlog%22">Approved backlog</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Approved backlog"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Approved backlog"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Ready%20for%20development%22">Ready for development</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Ready for development"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Ready for development"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Working%20on%22">Working on</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Working on"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Working on"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Code%20review%22">Code review</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Code review"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Code review"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22QA%22">QA</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "QA"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "QA"}h</td>
+        </tr>
+        <tr>
+            <td><a href="https://stanwood.atlassian.net/issues/?jql=project%20%3D%20{ticket.project_id}%20AND%20status%20%3D%20%22Done%22">Done</a></td>
+            <td>{count(ticket.original_estimate)) | ticket.status == "Done"}</td>
+            <td>{sum(ticket.original_estimate)) | ticket.status == "Done"}h</td>
+        </tr>
+        <tr class="footer">
+            <td>TOTAL</td>
+            <td>{count(ticket.original_estimate))}</td>
+            <td>{sum(ticket.original_estimate))}</td>
+        </tr>
+    </table>
+</section>
+<footer>
+    <h1>stanwood GmbH</h1><br>
+    Rudolfstr. 14 | 10245 Berlin | Germany<br>
+    Gesch&auml;ftsf&uuml;hrer: Michael Geringer, Hannes Kleist, Tobias Oswald<br>
+    HRB 133574, AG Charlottenburg
+</footer>
+</body>
+</html>
